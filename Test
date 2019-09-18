@@ -1,0 +1,33 @@
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.SparkException
+import org.apache.log4j.Logger
+import org.apache.log4j.Level
+Logger.getLogger("org").setLevel(Level.OFF)
+val spark=SparkSession.builder()
+      .appName("Spark DataFrame Example")
+      .config("spark.master","local")
+      .getOrCreate()
+//Implicit methods available in Scala for converting common Scala objects into DataFrames
+    import spark.implicits._
+ 
+    //Set the Log file level
+spark.sparkContext.setLogLevel("WARN")
+val dataSource="C:\\spark-notebook-0.8.3-scala-2.11.8-spark-2.2.2-hadoop-2.7.2\\resources\\"
+  def getFilePath(fileName: String):String={
+    return dataSource+fileName
+  }
+//Read the original .csv file
+    val people_csvDF=spark.read.format("csv").load(getFilePath("people.csv"))
+    println("Read the original .csv file (people.csv): ")
+    people_csvDF.show()
+//Using .option() to reorganise .csv data
+    val people_csvDF1=spark.read.format("csv")
+      .option("sep", ";")
+      .option("inferSchema", "true")
+      .option("header", "true")
+      .load(getFilePath("people.csv"))
+    println("Using .option() to reorganise .csv data:")
+    people_csvDF1.show()
+  people_csvDF.printSchema()
+//Save DataFrame to a specified format
+  people_csvDF1.select("name", "job").write.mode(SaveMode.ErrorIfExists).json(getFilePath("people_csvDF1"))
